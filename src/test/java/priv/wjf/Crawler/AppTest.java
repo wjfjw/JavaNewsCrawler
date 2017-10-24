@@ -1,4 +1,4 @@
-package priv.wjf.Jsoup;
+package priv.wjf.Crawler;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
