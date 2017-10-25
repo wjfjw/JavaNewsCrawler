@@ -1,17 +1,14 @@
 package priv.wjf.Crawler;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -24,12 +21,10 @@ import org.apache.http.impl.client.HttpClients;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class QQNewsCrawler 
+public class QQNewsCrawler implements NewsCrawler
 {
-	void crawl() throws FileNotFoundException
+	public void crawl(BlockingQueue<String> urlQueue , int days)
 	{
-		PrintWriter out = new PrintWriter("./data/urls");
-		Queue<String> urlQueue = new LinkedList<String>();
 		URI uri;
 		URIBuilder uriBuilder;
 		
@@ -49,7 +44,7 @@ public class QQNewsCrawler
 			
 			Calendar calendar = Calendar.getInstance();
 			
-			for(int dayCnt=1 ; dayCnt<=30 ; ++dayCnt) {
+			for(int dayCnt=1 ; dayCnt<=days ; ++dayCnt) {
 				calendar.add(Calendar.DAY_OF_MONTH, -1);
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 			    String dateString = formatter.format(calendar.getTime());
@@ -90,21 +85,16 @@ public class QQNewsCrawler
 					//获取总页数
 					count = dataObject.getInt("count");
 					
-					//获取新闻列表
+					//获取新闻列表,将url加入队列
 					JSONArray newsArray =  dataObject.getJSONArray("article_info");
 					for(int i=0 ; i<newsArray.size() ; ++i) {
 						JSONObject newsObject = newsArray.getJSONObject(i);
 						if(!newsObject.getString("column").equals("图片")) {
-							urlQueue.add(newsObject.getString("url"));
+							urlQueue.put(newsObject.getString("url"));
 						}
 					}
 				}
 				
-				//测试输出
-				out.println(dateString + ": " + urlQueue.size());
-	    		while(!urlQueue.isEmpty()) {
-	    			out.println(urlQueue.poll());
-	    		}
 			}
 			
 		}
@@ -114,9 +104,10 @@ public class QQNewsCrawler
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		
-		out.close();
 	}
 }
 

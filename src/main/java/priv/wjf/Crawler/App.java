@@ -1,19 +1,79 @@
 package priv.wjf.Crawler;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 public class App 
 {
 	
-    public static void main( String[] args )
+    public static void main( String[] args ) throws FileNotFoundException
     {
-    	String url = "http://news.qq.com/a/20171017/032694.htm";
+    	BlockingQueue<String> urlQueue = new LinkedBlockingQueue<String>();
+    	NewsCrawler newsCrawler = new QQNewsCrawler();
     	NewsParser newsParser = new QQNewsParser();
-    	newsParser.parse(url);
+    	PrintWriter out = new PrintWriter("./data/qqNews");
     	
-    	System.out.println("新闻标题： " + newsParser.getNewsTitle());
-		System.out.println("新闻类别： " + newsParser.getNewsCategory());
-		System.out.println("新闻来源： " + newsParser.getNewsSource());
-		System.out.println("新闻发布时间： " + newsParser.getNewsTime());
-		System.out.println("新闻正文内容： " + newsParser.getNewsContent());
-		System.out.println("新闻标签： " + newsParser.getNewsTag());
+    	//抓取url线程
+    	Thread crawlerThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				newsCrawler.crawl(urlQueue, 2);
+			}
+		});
+    	
+    	//解析网页线程
+    	Thread parserThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				String url = "";
+				try {
+					while(true) {
+						url = urlQueue.poll(1, TimeUnit.SECONDS);
+						if(url==null) {
+							break;
+						}
+				    	newsParser.parse(url);
+				    	System.out.println("--------------------------");    	
+				    	out.println(newsParser.getNewsTitle());
+				    	out.print(newsParser.getNewsCategory());
+				    	out.print(newsParser.getNewsSource());
+				    	out.print(newsParser.getNewsTag());
+				    	out.println(newsParser.getNewsTime());
+				    	out.println(newsParser.getNewsContent());
+				    	out.println();
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				
+			}
+		});
+    	
+    	Thread thread = new Thread(new MyRunnable());
+    	
+//    	crawlerThread.start();
+//    	parserThread.start();
+    	thread.start();
+    	
+    	out.close();
     }
+    
+    
+}
+
+class MyRunnable implements Runnable{
+	
+	@Override
+	public void run() {
+		PrintWriter out = null;
+		try {
+			out = new PrintWriter("./data/qqNews");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		out.println("123");
+	}
 }
