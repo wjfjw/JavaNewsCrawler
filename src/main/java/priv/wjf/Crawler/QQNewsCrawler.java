@@ -62,7 +62,7 @@ public class QQNewsCrawler implements NewsCrawler
 		    			CloseableHttpResponse response = httpCilent.execute(httpget);
 		    			HttpEntity entity = response.getEntity();
 		    			InputStream in = entity.getContent();
-		    			BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+		    			BufferedReader br = new BufferedReader(new InputStreamReader(in,"GBK"));
 		    			jsonString = br.readLine();
 		    			if(!jsonString.equals("<html>")) {
 		    				flag = true;

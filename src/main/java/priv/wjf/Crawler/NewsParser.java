@@ -2,7 +2,7 @@ package priv.wjf.Crawler;
 
 public interface NewsParser 
 {
-	void parse(String url);
+	boolean parse(String url);
 	
 	String getNewsTitle();
 	

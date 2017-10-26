@@ -25,7 +25,7 @@ public class QQNewsParser implements NewsParser
 		tag = null;
 	}
 	
-	public void parse(String url){
+	public boolean parse(String url){
 		Document doc;
 		try {
 			doc = Jsoup.connect(url).get();
@@ -33,13 +33,15 @@ public class QQNewsParser implements NewsParser
 			//整篇新闻节点
 			Element newsNode = doc.getElementsByClass("qq_article").first();
 			if(newsNode == null){
-				throw new NodeLackException("Lacking newsNode!");
+				System.out.println("该网页不能被解析！");
+				return false;
 			}
 			
 			//新闻头部节点
 			Element headNode = newsNode.getElementsByClass("hd").first();
 			if(headNode == null){
-				throw new NodeLackException("Lacking headNode!");
+				System.out.println("该网页不能被解析！");
+				return false;
 			}
 			
 			//新闻标题
@@ -102,13 +104,12 @@ public class QQNewsParser implements NewsParser
 					tag = a_tagNode.ownText();
 				}
 			}
-
 		}
 		catch (IOException e) {
 			e.printStackTrace();
-		}catch (NodeLackException e) {
-			e.printStackTrace();
 		}
+		
+		return true;
 	}
 	
 	public String getNewsTitle(){
@@ -133,13 +134,5 @@ public class QQNewsParser implements NewsParser
 	
 	public String getNewsTag(){
 		return tag;
-	}
-}
-
-class NodeLackException extends Exception
-{
-	public NodeLackException(){}
-	public NodeLackException(String message){
-		super(message);
 	}
 }
