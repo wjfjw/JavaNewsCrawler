@@ -16,5 +16,4 @@ public interface NewsParser
 	
 	String getNewsTag();
 	
-	
 }
