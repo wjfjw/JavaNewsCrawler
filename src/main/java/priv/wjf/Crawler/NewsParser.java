@@ -1,12 +1,14 @@
 package priv.wjf.Crawler;
 
+import java.util.regex.Pattern;
+
 public interface NewsParser 
 {
 	boolean parse(String url);
 	
 	String getNewsTitle();
 	
-	String getNewsCategory();
+//	String getNewsCategory();
 	
 	String getNewsSource();
 	
@@ -14,6 +16,6 @@ public interface NewsParser
 	
 	String getNewsContent();
 	
-	String getNewsTag();
+//	String getNewsTag();
 	
 }

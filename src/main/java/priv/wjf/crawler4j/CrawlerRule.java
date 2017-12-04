@@ -35,9 +35,9 @@ public class CrawlerRule extends WebCrawler
         	try (FileWriter out = new FileWriter("./data/qqNews", true))
             {
             	out.append(newsParser.getNewsTitle() + '\n');
-    	    	out.append(newsParser.getNewsCategory() + '\t');
-    	    	out.append(newsParser.getNewsSource() + '\t');
-    	    	out.append(newsParser.getNewsTag() + '\t');
+//    	    	out.append(newsParser.getNewsCategory() + '\t');
+//    	    	out.append(newsParser.getNewsSource() + '\t');
+//    	    	out.append(newsParser.getNewsTag() + '\t');
     	    	out.append(newsParser.getNewsTime() + '\n');
     	    	out.append(newsParser.getNewsContent() + "\n\n");
     	    	out.flush();

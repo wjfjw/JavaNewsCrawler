@@ -8,15 +8,20 @@ import java.util.concurrent.TimeUnit;
 
 public class App 
 {
+	private static BlockingQueue<String> urlQueue;
+	private static NewsCrawler newsCrawler;
+	private static NewsParser newsParser;
 	
-    public static void main( String[] args ) throws FileNotFoundException
+	static {
+		urlQueue = new LinkedBlockingQueue<String>();
+		newsCrawler = new SinaNewsCrawler();
+		newsParser = new SinaNewsParser();
+	}
+	
+    public static void main( String[] args ) throws FileNotFoundException, InterruptedException
     {
-    	BlockingQueue<String> urlQueue = new LinkedBlockingQueue<String>();
-    	NewsCrawler newsCrawler = new QQNewsCrawler();
-    	int crawlDays = 2;
-    	
     	//抓取url线程
-    	Thread crawlerThread = new Thread(new CrawlerRunnable(urlQueue, crawlDays, newsCrawler));
+    	Thread crawlerThread = new Thread( new CrawlerRunnable() );
     	crawlerThread.start();
     	
     	//解析网页线程
@@ -25,68 +30,53 @@ public class App
 //    		parserThread[i] = new Thread(new ParserRunnable(urlQueue));
 //    		parserThread[i].start();
 //    	}
-    	Thread parserThread = new Thread(new ParserRunnable(urlQueue));
+    	Thread parserThread = new Thread( new ParserRunnable() );
     	parserThread.start();
+    }
+    
+    
+    
+    //抓取url线程运行方法
+    static class CrawlerRunnable implements Runnable
+    {
+    	@Override
+    	public void run() {
+    		newsCrawler.crawl(urlQueue);
+    	}
+    }
+    
+    //解析网页线程运行方法
+    static class ParserRunnable implements Runnable
+    {
+    	@Override
+    	public void run() {
+    		try(PrintWriter out = new PrintWriter("./data/sinaNews_1")) {
+    			String url = null;
+    			int linenum = 1;
+    			while(true) {
+//    				synchronized (ParserRunnable.class) {
+    				url = urlQueue.poll(1, TimeUnit.SECONDS);
+    				if(url==null) {
+    					break;
+    				}
+    				if(newsParser.parse(url)) {
+    					out.print(linenum);
+    					out.print("," + newsParser.getNewsTime());
+    					out.print("," + newsParser.getNewsTitle());
+    					out.print("," + url);
+    					out.print("," + newsParser.getNewsSource());
+    					out.println("," + newsParser.getNewsContent());
+    				    out.flush();
+    				    ++linenum;
+    				}
+//    				}
+    			}
+    		} catch (InterruptedException e) {
+    			e.printStackTrace();
+    		} catch (FileNotFoundException e) {
+    			e.printStackTrace();
+    		}
+    	}
     }
 }
 
-//抓取url线程运行方法
-class CrawlerRunnable implements Runnable
-{
-	private BlockingQueue<String> urlQueue;
-	private int crawlDays;
-	private NewsCrawler newsCrawler;
-	
-	public CrawlerRunnable(BlockingQueue<String> urlQueue , int crawlDays , NewsCrawler newsCrawler) {
-		this.urlQueue = urlQueue;
-		this.crawlDays = crawlDays;
-		this.newsCrawler = newsCrawler;
-	}
-	
-	@Override
-	public void run() {
-		newsCrawler.crawl(urlQueue, crawlDays);
-	}
-}
-
-
-//解析网页线程运行方法
-class ParserRunnable implements Runnable
-{
-	private BlockingQueue<String> urlQueue;
-	private NewsParser newsParser;
-	
-	public ParserRunnable(BlockingQueue<String> urlQueue) {
-		this.urlQueue = urlQueue;
-		newsParser = new QQNewsParser();
-	}
-	
-	@Override
-	public void run() {
-		try(PrintWriter out = new PrintWriter("./data/qqNews")) {
-			String url = null;
-			while(true) {
-//				synchronized (ParserRunnable.class) {
-				url = urlQueue.poll(1, TimeUnit.SECONDS);
-				if(url==null) {
-					break;
-				}
-				if(newsParser.parse(url)) {
-						out.println(newsParser.getNewsTitle());
-				    	out.print(newsParser.getNewsCategory());
-				    	out.print(newsParser.getNewsSource());
-				    	out.print(newsParser.getNewsTag());
-				    	out.println(newsParser.getNewsTime());
-				    	out.println(newsParser.getNewsContent());
-				    	out.println();
-				    	out.flush();
-				}
-//				}
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-}

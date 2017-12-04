@@ -23,10 +23,15 @@ import net.sf.json.JSONObject;
 
 public class QQNewsCrawler implements NewsCrawler
 {
-	public void crawl(BlockingQueue<String> urlQueue , int days)
+	
+	@Override
+	public void crawl(BlockingQueue<String> urlQueue)
 	{
 		URI uri;
 		URIBuilder uriBuilder;
+		
+		Calendar startDate = Calendar.getInstance();
+		Calendar endDate = Calendar.getInstance();
 		
 		try(CloseableHttpClient httpCilent = HttpClients.createDefault()) {
 			HttpGet httpget = new HttpGet();
@@ -42,11 +47,10 @@ public class QQNewsCrawler implements NewsCrawler
 			        .setParameter("cata", "")  
 			        ;
 			
-			Calendar calendar = Calendar.getInstance();
+			Calendar calendar = (Calendar)startDate.clone();
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 			
-			for(int dayCnt=1 ; dayCnt<=days ; ++dayCnt) {
-				calendar.add(Calendar.DAY_OF_MONTH, -1);
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			while(calendar.compareTo(endDate) <= 0) {
 			    String dateString = formatter.format(calendar.getTime());
 				System.out.println(dateString);
 				uriBuilder.setParameter("date", dateString);
@@ -94,7 +98,7 @@ public class QQNewsCrawler implements NewsCrawler
 						}
 					}
 				}
-				
+				calendar.add(Calendar.DAY_OF_MONTH, 1);
 			}
 			
 		}
