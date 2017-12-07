@@ -45,11 +45,11 @@ public class SinaNewsCrawler implements NewsCrawler
 			        .setParameter("ch", "01")
 			        .setParameter("offset_page", "0")
 			        .setParameter("offset_num", "0")
-			        .setParameter("num", "300")
+			        .setParameter("num", "3000")
 //			        .setParameter("r", Double.toString(Math.random()))
 			        ;
 			
-			for(int page=1 ; page<=1 ; ++page) {
+			for(int page=2 ; page<=2 ; ++page) {
 				uriBuilder.setParameter("page", Integer.toString(page));
 				uri = uriBuilder.build();
 				httpget.setURI(uri);

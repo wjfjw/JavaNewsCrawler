@@ -50,7 +50,7 @@ public class App
     {
     	@Override
     	public void run() {
-    		try(PrintWriter out = new PrintWriter("./data/sinaNews_1")) {
+    		try(PrintWriter out = new PrintWriter("./data/sinaNews_2")) {
     			String url = null;
     			int linenum = 1;
     			while(true) {
