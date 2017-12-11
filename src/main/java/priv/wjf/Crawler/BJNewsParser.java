@@ -9,26 +9,18 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class BJNewsParser implements NewsParser
+public class BJNewsParser extends AbstractNewsParser
 {
-	private String title;
-	private String time;
-	private String content;
-	private String source;
-	
-	private final int patternNum = 4;
+	private final int patternNum = 3;
 	private String[] filter;
 	
 	public BJNewsParser() {
-		title = null;
-		time = null;
-		content = null;
-		source = "新京报";
+		super("新京报");
 		
 		filter = new String[patternNum];
 		filter[0] = "新京报快讯";
 		filter[1] = "[(（].{0,20}记者.{0,20}[)）]";
-		filter[2] = "[\\s　]+";
+		filter[2] = "[\\s 　]+";
 	}
 
 	@Override
@@ -39,7 +31,7 @@ public class BJNewsParser implements NewsParser
 			//新闻标题
 			Element titleNode = doc.getElementsByClass("title").first();
 			title = titleNode.getElementsByTag("h1").first().ownText();
-			title = title.replaceAll("|.*", "");
+			title = title.replaceAll("\\|.*", "");
 			title = title.replaceAll("\\s+", "");
 			if(title==null || title.isEmpty()) {
 				return false;
@@ -58,40 +50,39 @@ public class BJNewsParser implements NewsParser
 			
 			//新闻正文
 			StringBuilder contentBuilder = new StringBuilder();
-			Element contentNode =  doc.getElementsByClass("content").first();
-			Elements pNodes = contentNode.getElementsByTag("p");
 			
-			
+			if(url.contains("wevideo")) {
+				Element contentNode = doc.getElementById("daoy");
+				if(contentNode != null) {
+					contentBuilder.append(contentNode.ownText());
+				}
+			}else {
+				Element contentNode =  doc.getElementsByClass("content").first();
+				if(contentNode != null) {
+					Elements pNodes = contentNode.getElementsByTag("p");
+					for(Element pNode : pNodes) {
+						if(pNode.attributes().size()==0) {
+							String paragraph = pNode.text();
+							for(int i=0 ; i<patternNum ; ++i){
+								paragraph = paragraph.replaceAll(filter[i], "");
+							}
+							contentBuilder.append(paragraph);
+						}
+					}
+				}
+			}
 			content = contentBuilder.toString();
 			content.replaceAll(",", "，");
-			if(content==null || content.isEmpty()) {
+			if(content==null || content.isEmpty()
+					|| (content.contains("详见") && content.length()<20) ) {
 				return false;
 			}
-			
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public String getNewsTitle() {
-		return title;
-	}
-
-	@Override
-	public String getNewsSource() {
-		return source;
-	}
-
-	@Override
-	public String getNewsTime() {
-		return time;
-	}
-
-	@Override
-	public String getNewsContent() {
-		return content;
+		
+		return true;
 	}
 
 }

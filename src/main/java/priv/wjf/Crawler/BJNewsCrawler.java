@@ -12,13 +12,14 @@ public class BJNewsCrawler implements NewsCrawler
 {
 
 	@Override
-	public void crawl(BlockingQueue<String> urlQueue) 
+	public void crawl(BlockingQueue<String> urlQueue)
 	{
 		final String domain = "http://www.bjnews.com.cn";
-		String url = domain + "/roll?page=";
+		String prefix = domain + "/roll?page=";
+		String url;
 		
 		for(int page=1 ; page<=200 ; ++page){
-			url += page;
+			url = prefix + page;
 			try {
 				Document doc = Jsoup.connect(url).get();
 				
@@ -39,11 +40,13 @@ public class BJNewsCrawler implements NewsCrawler
 						}
 					}
 				}
+				Thread.sleep(2000);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			
 		}
 	}
 

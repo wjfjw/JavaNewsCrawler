@@ -1,9 +1,9 @@
 package priv.wjf.Crawler;
 
-import java.util.regex.Pattern;
-
 public interface NewsParser 
 {
+	void clear();
+	
 	boolean parse(String url);
 	
 	String getNewsTitle();

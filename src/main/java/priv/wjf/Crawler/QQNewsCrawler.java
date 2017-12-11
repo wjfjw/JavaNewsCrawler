@@ -31,7 +31,9 @@ public class QQNewsCrawler implements NewsCrawler
 		URIBuilder uriBuilder;
 		
 		Calendar startDate = Calendar.getInstance();
+		startDate.set(2017, 11, 1);
 		Calendar endDate = Calendar.getInstance();
+		endDate.set(2017, 11, 11);
 		
 		try(CloseableHttpClient httpCilent = HttpClients.createDefault()) {
 			HttpGet httpget = new HttpGet();
@@ -52,7 +54,6 @@ public class QQNewsCrawler implements NewsCrawler
 			
 			while(calendar.compareTo(endDate) <= 0) {
 			    String dateString = formatter.format(calendar.getTime());
-				System.out.println(dateString);
 				uriBuilder.setParameter("date", dateString);
 				
 				for(int page=1, count=100 ; page<=count ; ++page){
@@ -77,6 +78,8 @@ public class QQNewsCrawler implements NewsCrawler
 						continue;
 					}
 					
+					System.out.println(dateString + " page" + page);
+					
 					jsonString = jsonString.substring(9, jsonString.length()-1);
 					JSONObject jsonObject = JSONObject.fromObject(jsonString);
 					JSONObject reponseObject = jsonObject.getJSONObject("response");
@@ -97,6 +100,7 @@ public class QQNewsCrawler implements NewsCrawler
 							urlQueue.put(newsObject.getString("url"));
 						}
 					}
+					Thread.sleep(1000);
 				}
 				calendar.add(Calendar.DAY_OF_MONTH, 1);
 			}

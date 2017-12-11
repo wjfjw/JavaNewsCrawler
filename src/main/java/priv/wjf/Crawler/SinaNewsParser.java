@@ -9,21 +9,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class SinaNewsParser implements NewsParser
+public class SinaNewsParser extends AbstractNewsParser
 {
-	private String title;
-	private String time;
-	private String content;
-	private String source;
-	
 	private final int patternNum = 4;
 	private String[] filter;
 	
 	public SinaNewsParser(){
-		title = null;
-		time = null;
-		content = null;
-		source = "新浪新闻";
+		super("新浪新闻");
 		
 		filter = new String[patternNum];
 		filter[0] = ".{0,15}(\\d{1,2}月\\d{1,2}日)?([电讯]|消息|报道)";
@@ -32,7 +24,6 @@ public class SinaNewsParser implements NewsParser
 		filter[3] = "[\\s　]+";
 //		filter[4] = "据.{0,20}报道";
 	}
-
 
 	@Override
 	public boolean parse(String url) {
@@ -93,26 +84,6 @@ public class SinaNewsParser implements NewsParser
 		}
 		
 		return true;
-	}
-
-	@Override
-	public String getNewsTitle() {
-		return title;
-	}
-
-	@Override
-	public String getNewsTime() {
-		return time;
-	}
-
-	@Override
-	public String getNewsContent() {
-		return content;
-	}
-
-	@Override
-	public String getNewsSource() {
-		return source;
 	}
 
 }
