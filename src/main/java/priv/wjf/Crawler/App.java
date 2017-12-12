@@ -11,7 +11,7 @@ public class App
 	private static BlockingQueue<String> urlQueue;
 	private static NewsCrawler newsCrawler;
 	private static NewsParser newsParser;
-	private static String outputFile = "./data/qqnews/qqnews";
+	private static String outputFile = "./data/qqnews/qqFinanceNews";
 	
 	static {
 		urlQueue = new LinkedBlockingQueue<String>();
@@ -22,8 +22,8 @@ public class App
     public static void main( String[] args ) throws FileNotFoundException, InterruptedException
     {
     	//抓取url线程
-//    	Thread crawlerThread = new Thread( new CrawlerRunnable() );
-//    	crawlerThread.start();
+    	Thread crawlerThread = new Thread( new CrawlerRunnable() );
+    	crawlerThread.start();
     	
     	//解析网页线程
 //    	Thread[] parserThread = new Thread[5];
@@ -32,7 +32,7 @@ public class App
 //    		parserThread[i].start();
 //    	}
 
-    	urlQueue.put("http://news.qq.com/a/20171211/012005.htm");
+//    	urlQueue.put("http://finance.qq.com/a/20171101/039564.htm");
     	Thread parserThread = new Thread( new ParserRunnable() );
     	parserThread.start();
     }

@@ -1,6 +1,8 @@
 package priv.wjf.Crawler;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,7 +14,7 @@ public class QQNewsParser extends AbstractNewsParser
 	private String category;
 	private String tag;
 	private String[] filter;
-	private final int patternNum = 3;
+	private final int patternNum = 4;
 	
 	public QQNewsParser(){
 		super("腾讯新闻");
@@ -21,27 +23,25 @@ public class QQNewsParser extends AbstractNewsParser
 		
 		filter = new String[patternNum];
 		filter[0] = ".{0,15}(\\d{1,2}月\\d{1,2}日)?([电讯]|消息|报道)";
-		filter[1] = "[(（].{0,20}记者.{0,20}[)）]";
-		filter[2] = "[\\s 　]+";
+		filter[1] = "[(（【].{0,20}记者.{0,20}[)）】]";
+		filter[2] = "[（(].{0,10}[)）]";
+		filter[3] = "[\\s 　]+";
 	}
 	
 	public boolean parse(String url){
 		Document doc;
 		try {
 			doc = Jsoup.connect(url).get();
-			System.out.println(url);
-			
-			if(doc.getElementsByClass("qq_conent clearfix").first()!=null 
-					&& doc.getElementsByClass("LEFT").first()!=null) {
-				return parseNewPage(doc);
-			}
 			
 			//整篇新闻节点
 			Element newsNode = doc.getElementsByClass("qq_article").first();
 			if(newsNode == null){
-				System.out.println(url);
-				System.out.println("该网页不能被解析！");
-				return false;
+				boolean result =  parseNewPage(url);
+				if(!result) {
+					System.out.println(url);
+					System.out.println("该网页不能被解析！");
+				}
+				return result;
 			}
 			
 			//新闻头部节点
@@ -136,48 +136,85 @@ public class QQNewsParser extends AbstractNewsParser
 		return true;
 	}
 	
-	private boolean parseNewPage(Document doc)
+	private boolean parseNewPage(String url)
 	{
-		Element newsNode = doc.getElementsByClass("LEFT").first();
-		
-		//新闻标题
-		Element titleNode = newsNode.getElementsByTag("h1").first();
-		if(titleNode != null){
-			title = titleNode.ownText();
-		}
-		if(title==null || title.isEmpty()) {
-			return false;
-		}
-		
-		//新闻发布时间
-		Element timeNode = newsNode.getElementsByClass("left-stick-wp").first();
-		if(timeNode != null){
-			String year = timeNode.getElementsByClass("year through").first().getElementsByTag("span").first().ownText();
-			String monthDay = timeNode.getElementsByClass("md").first().ownText();
-			String hourMinute = timeNode.getElementsByClass("time").first().ownText(); 
-			time = year + monthDay + hourMinute;
-			time = time.replaceAll("[/:\\s]", "");
-		}
-		if(time==null || time.isEmpty()) {
-			return false;
+		String newUrl = "http://new.qq.com/cmsn/";
+		String date = "";
+		Pattern pattern = Pattern.compile("(20\\d{6})/(\\d+)\\.(htm|html|shtml)");
+		Matcher matcher = pattern.matcher(url);
+		if(matcher.find()) {
+			date = matcher.group(1);
+			newUrl += date;
+			newUrl += matcher.group(2);
+			newUrl += ".html";
 		}
 		
-		//新闻正文内容
-		StringBuilder contentBuilder = new StringBuilder();
-		Element contentNode = newsNode.getElementsByClass("content-article").first();
-		Elements pNodes = newsNode.getElementsByTag("p");
-		for(Element pNode : pNodes) {
-			contentBuilder.append( pNode.ownText() );
+		try {
+			Document doc = Jsoup.connect(newUrl).get();
+			
+			Element newsNode = doc.getElementsByClass("LEFT").first();
+			if(newsNode == null) {
+//				newUrl = newUrl.substring(0, newUrl.length()-5);
+//				doc = Jsoup.connect( newUrl ).get();
+//				newsNode = doc.getElementsByClass("LEFT").first();
+//				if(newsNode == null) {
+//					return false;
+//				}
+				return false;
+			}
+			
+			//新闻标题
+			Element titleNode = newsNode.getElementsByTag("h1").first();
+			if(titleNode != null){
+				title = titleNode.ownText();
+			}
+			if(title==null || title.isEmpty()) {
+				return false;
+			}
+			
+			//新闻发布时间
+			time = date + "1200";
+			Element headNode = doc.getElementsByTag("head").first();
+//			Elements metaElements = headNode.getElementsByTag("meta");
+//			for(Element metaElement : metaElements) {
+//				if(metaElement.attr("name").equals("_pubtime")) {
+//					time = metaElement.attr("content");
+//					break;
+//				}
+//			}
+			Element jsNode = headNode.getElementsByTag("script").first();
+			String jsString = jsNode.toString();
+			pattern = Pattern.compile("\"pubtime\":\"(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\"");
+			matcher = pattern.matcher(jsString);
+			if(matcher.find()) {
+				time = matcher.group(1);
+			}
+			time = time.replaceAll("[-:\\s]", "");
+			time = time.substring(0, 12);
+			if(time==null || time.isEmpty()) {
+				return false;
+			}
+			
+			//新闻正文内容
+			StringBuilder contentBuilder = new StringBuilder();
+			Element contentNode = newsNode.getElementsByClass("content-article").first();
+			Elements pNodes = contentNode.getElementsByTag("p");
+			for(Element pNode : pNodes) {
+				contentBuilder.append( pNode.ownText() );
+			}
+			content = contentBuilder.toString();
+			content.replaceAll(",", "，");
+			for(int i=0 ; i<patternNum ; ++i){
+				content = content.replaceAll(filter[i], "");
+			}
+			if(content==null || content.isEmpty()) {
+				return false;
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		content = contentBuilder.toString();
-		content.replaceAll(",", "，");
-		for(int i=0 ; i<patternNum ; ++i){
-			content = content.replaceAll(filter[i], "");
-		}
-		if(content==null || content.isEmpty()) {
-			return false;
-		}
-		
+
 		return true;
 	}
 	

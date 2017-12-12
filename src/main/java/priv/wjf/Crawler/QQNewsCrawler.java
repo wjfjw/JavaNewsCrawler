@@ -20,9 +20,12 @@ import org.apache.http.impl.client.HttpClients;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import ucar.ma2.StructureDataComposite;
 
 public class QQNewsCrawler implements NewsCrawler
 {
+	
+	private final String site = "finance";
 	
 	@Override
 	public void crawl(BlockingQueue<String> urlQueue)
@@ -31,20 +34,20 @@ public class QQNewsCrawler implements NewsCrawler
 		URIBuilder uriBuilder;
 		
 		Calendar startDate = Calendar.getInstance();
-		startDate.set(2017, 11, 1);
+		startDate.set(2017, 10, 1);
 		Calendar endDate = Calendar.getInstance();
-		endDate.set(2017, 11, 11);
+		endDate.set(2017, 10, 30);
 		
 		try(CloseableHttpClient httpCilent = HttpClients.createDefault()) {
 			HttpGet httpget = new HttpGet();
-			httpget.addHeader("Referer" , "http://news.qq.com/articleList/rolls/");
+			httpget.addHeader("Referer" , "http://" + site + ".qq.com/articleList/rolls/");
 			
 			uriBuilder = new URIBuilder()  
 			        .setScheme("http")  
 			        .setHost("roll.news.qq.com")  
 			        .setPath("/interface/cpcroll.php")  
 			        .setParameter("callback", "rollback")
-			        .setParameter("site", "news")  
+			        .setParameter("site", site)  
 			        .setParameter("mode", "1")  
 			        .setParameter("cata", "")  
 			        ;
