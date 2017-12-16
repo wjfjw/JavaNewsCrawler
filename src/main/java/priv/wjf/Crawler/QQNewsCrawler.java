@@ -25,7 +25,7 @@ import ucar.ma2.StructureDataComposite;
 public class QQNewsCrawler implements NewsCrawler
 {
 	
-	private final String site = "finance";
+	private final String site = "news";
 	
 	@Override
 	public void crawl(BlockingQueue<String> urlQueue)

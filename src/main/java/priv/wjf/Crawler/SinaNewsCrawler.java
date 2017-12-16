@@ -41,16 +41,18 @@ public class SinaNewsCrawler implements NewsCrawler
 			        .setScheme("http")  
 			        .setHost("roll.news.sina.com.cn")  
 			        .setPath("/interface/rollnews_ch_out_interface.php")  
-			        .setParameter("col", "90,91,92")
+			        .setParameter("col", "90,91,92,93,96,97")		//国内、国际、社会、军事、科技、财经
 			        .setParameter("ch", "01")
 			        .setParameter("offset_page", "0")
 			        .setParameter("offset_num", "0")
-			        .setParameter("num", "3000")
+			        .setParameter("num", "1500")
+			        .setParameter("page", "1")
 //			        .setParameter("r", Double.toString(Math.random()))
 			        ;
 			
-			for(int page=2 ; page<=2 ; ++page) {
-				uriBuilder.setParameter("page", Integer.toString(page));
+			for(int day=5 ; day<=6 ; ++day) {
+				String dateString = Integer.toString(day/10) + Integer.toString(day%10);
+				uriBuilder.setParameter("date", "2017-11-" + dateString);
 				uri = uriBuilder.build();
 				httpget.setURI(uri);
 				
@@ -63,7 +65,7 @@ public class SinaNewsCrawler implements NewsCrawler
     				String line = br.readLine();
     				if(line == null)
     					break;
-    				Pattern pattern = Pattern.compile("http://news\\.sina\\.com\\.cn/\\w/(\\w{2}/)?2017-\\d{2}-\\d{2}/.+\\.(htm|html|shtml)");
+    				Pattern pattern = Pattern.compile("http://.+\\.sina\\.com\\.cn/.+2017-\\d{2}-\\d{2}/.+\\.(htm|html|shtml)");
     				Matcher matcher = pattern.matcher(line);
     				if(matcher.find()){
     					String url = matcher.group();

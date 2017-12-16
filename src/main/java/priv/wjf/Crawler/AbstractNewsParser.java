@@ -8,9 +8,9 @@ public abstract class AbstractNewsParser implements NewsParser
 	protected String source;
 	
 	protected AbstractNewsParser(String source) {
-		title = null;
-		time = null;
-		content = null;
+		title = "";
+		time = "";
+		content = "";
 		this.source = source;
 	}
 	

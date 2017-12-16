@@ -1,7 +1,8 @@
 package priv.wjf.Crawler;
 
 import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -11,12 +12,12 @@ public class App
 	private static BlockingQueue<String> urlQueue;
 	private static NewsCrawler newsCrawler;
 	private static NewsParser newsParser;
-	private static String outputFile = "./data/qqnews/qqFinanceNews";
+	private static String outputFile = "./data/sina/sinaNews";
 	
 	static {
 		urlQueue = new LinkedBlockingQueue<String>();
-		newsCrawler = new QQNewsCrawler();
-		newsParser = new QQNewsParser();
+		newsCrawler = new SinaNewsCrawler();
+		newsParser = new SinaNewsParser();
 	}
 	
     public static void main( String[] args ) throws FileNotFoundException, InterruptedException
@@ -32,7 +33,7 @@ public class App
 //    		parserThread[i].start();
 //    	}
 
-//    	urlQueue.put("http://finance.qq.com/a/20171101/039564.htm");
+//    	urlQueue.put("http://mil.news.sina.com.cn/china/2017-11-01/doc-ifynhhaz1213827.shtml");
     	Thread parserThread = new Thread( new ParserRunnable() );
     	parserThread.start();
     }
@@ -53,9 +54,9 @@ public class App
     {
     	@Override
     	public void run() {
-    		try(PrintWriter out = new PrintWriter(outputFile)) {
+    		try(FileWriter out = new FileWriter(outputFile , true)) {
     			String url = null;
-    			int linenum = 1;
+//    			int linenum = 1;
     			while(true) {
 //    				synchronized (ParserRunnable.class) {
 //    				Thread.sleep(200);
@@ -65,14 +66,14 @@ public class App
     				}
     				newsParser.clear();
     				if(newsParser.parse(url)) {
-    					out.print(linenum);
-    					out.print("," + newsParser.getNewsTime());
-    					out.print("," + newsParser.getNewsTitle());
-    					out.print("," + url);
-    					out.print("," + newsParser.getNewsSource());
-    					out.println("," + newsParser.getNewsContent());
+    					out.write(newsParser.getNewsTime());
+    					out.write("," + newsParser.getNewsTitle());
+    					out.write("," + url);
+    					out.write("," + newsParser.getNewsSource());
+    					out.write("," + newsParser.getNewsContent());
+    					out.write("\n");
     				    out.flush();
-    				    ++linenum;
+//    				    ++linenum;
     				}
 //    				}
     			}
@@ -80,7 +81,9 @@ public class App
     			e.printStackTrace();
     		} catch (FileNotFoundException e) {
     			e.printStackTrace();
-    		}
+    		} catch (IOException e) {
+				e.printStackTrace();
+			}
     	}
     }
 }
