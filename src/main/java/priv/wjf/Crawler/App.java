@@ -7,17 +7,28 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * category代号：
+ * "gn"：国内
+ * "gj"：国际
+ * "sh"：社会
+ * "js"：军事
+ * "cj"：财经
+ * "kj"：科技
+ */
+
 public class App 
 {
 	private static BlockingQueue<String> urlQueue;
 	private static NewsCrawler newsCrawler;
 	private static NewsParser newsParser;
-	private static String outputFile = "./data/sina/sinaNews";
+	private static String outputFile = "./data/qqnews/kjqq";
+	private static String category = "kj";
 	
 	static {
 		urlQueue = new LinkedBlockingQueue<String>();
-		newsCrawler = new SinaNewsCrawler();
-		newsParser = new SinaNewsParser();
+		newsCrawler = new QQNewsCrawler();
+		newsParser = new QQNewsParser();
 	}
 	
     public static void main( String[] args ) throws FileNotFoundException, InterruptedException
@@ -26,6 +37,8 @@ public class App
     	Thread crawlerThread = new Thread( new CrawlerRunnable() );
     	crawlerThread.start();
     	
+//    	urlQueue.put("http://news.qq.com/a/20171106/032084.htm");
+    	
     	//解析网页线程
 //    	Thread[] parserThread = new Thread[5];
 //    	for(int i=0 ; i<5 ; ++i) {
@@ -33,7 +46,6 @@ public class App
 //    		parserThread[i].start();
 //    	}
 
-//    	urlQueue.put("http://mil.news.sina.com.cn/china/2017-11-01/doc-ifynhhaz1213827.shtml");
     	Thread parserThread = new Thread( new ParserRunnable() );
     	parserThread.start();
     }
@@ -45,7 +57,7 @@ public class App
     {
     	@Override
     	public void run() {
-    		newsCrawler.crawl(urlQueue);
+    		newsCrawler.crawl(urlQueue, category);
     	}
     }
     
@@ -68,6 +80,7 @@ public class App
     				if(newsParser.parse(url)) {
     					out.write(newsParser.getNewsTime());
     					out.write("," + newsParser.getNewsTitle());
+    					out.write("," + category);
     					out.write("," + url);
     					out.write("," + newsParser.getNewsSource());
     					out.write("," + newsParser.getNewsContent());

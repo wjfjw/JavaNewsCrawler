@@ -8,13 +8,13 @@ public interface NewsParser
 	
 	String getNewsTitle();
 	
-//	String getNewsCategory();
-	
 	String getNewsSource();
 	
 	String getNewsTime();
 	
 	String getNewsContent();
+	
+	String getNewsCategory();
 	
 //	String getNewsTag();
 	

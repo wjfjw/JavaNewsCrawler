@@ -5,12 +5,14 @@ public abstract class AbstractNewsParser implements NewsParser
 	protected String title;
 	protected String time;
 	protected String content;
+	protected String category;
 	protected String source;
 	
 	protected AbstractNewsParser(String source) {
 		title = "";
 		time = "";
 		content = "";
+		category = "";
 		this.source = source;
 	}
 	
@@ -19,6 +21,7 @@ public abstract class AbstractNewsParser implements NewsParser
 		title = null;
 		time = null;
 		content = null;
+		category = null;
 	}
 	
 	@Override
@@ -39,6 +42,11 @@ public abstract class AbstractNewsParser implements NewsParser
 	@Override
 	public String getNewsContent() {
 		return content;
+	}
+	
+	@Override
+	public String getNewsCategory() {
+		return category;
 	}
 
 }

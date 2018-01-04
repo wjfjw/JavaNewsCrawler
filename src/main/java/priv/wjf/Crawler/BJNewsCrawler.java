@@ -12,7 +12,7 @@ public class BJNewsCrawler implements NewsCrawler
 {
 
 	@Override
-	public void crawl(BlockingQueue<String> urlQueue)
+	public void crawl(BlockingQueue<String> urlQueue, String category)
 	{
 		final String domain = "http://www.bjnews.com.cn";
 		String prefix = domain + "/roll?page=";

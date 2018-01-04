@@ -1,31 +1,46 @@
 package priv.wjf.Crawler;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 public class QQNewsParser extends AbstractNewsParser
 {
-	private String category;
 	private String tag;
-	private String[] filter;
-	private final int patternNum = 4;
+	private List<String> filter;
 	
 	public QQNewsParser(){
 		super("腾讯新闻");
-		category = null;
 		tag = null;
 		
-		filter = new String[patternNum];
-		filter[0] = ".{0,15}(\\d{1,2}月\\d{1,2}日)?([电讯]|消息|报道)";
-		filter[1] = "[(（【].{0,20}记者.{0,20}[)）】]";
-		filter[2] = "[（(].{0,10}[)）]";
-		filter[3] = "[\\s 　]+";
+		filter = new ArrayList<String>();
+		filter.add(".{0,15}\\d{1,2}月\\d{1,2}日([电讯]|消息|报道)");
+		filter.add(".{0,15}(消息|报道|称|透露)");
+		filter.add("[(（【].{0,20}记者.{0,20}[)）】]");
+		filter.add("[（(].{0,10}[)）]");
+		filter.add("[\\s 　]+");
+		filter.add("资料图(片)?(：)?");
 	}
 	
 	public boolean parse(String url){
@@ -85,8 +100,8 @@ public class QQNewsParser extends AbstractNewsParser
 			}
 			content = contentBuilder.toString();
 			content.replaceAll(",", "，");
-			for(int i=0 ; i<patternNum ; ++i){
-				content = content.replaceAll(filter[i], "");
+			for(String filterPattern : filter){
+				content = content.replaceAll(filterPattern, "");
 			}
 			if(content==null || content.isEmpty()) {
 				return false;
@@ -136,6 +151,7 @@ public class QQNewsParser extends AbstractNewsParser
 		return true;
 	}
 	
+	//解析形如“http://new.qq.com/cmsn/20180104004104.html”的url
 	private boolean parseNewPage(String url)
 	{
 		String newUrl = "http://new.qq.com/cmsn/";
@@ -154,13 +170,7 @@ public class QQNewsParser extends AbstractNewsParser
 			
 			Element newsNode = doc.getElementsByClass("LEFT").first();
 			if(newsNode == null) {
-//				newUrl = newUrl.substring(0, newUrl.length()-5);
-//				doc = Jsoup.connect( newUrl ).get();
-//				newsNode = doc.getElementsByClass("LEFT").first();
-//				if(newsNode == null) {
-//					return false;
-//				}
-				return false;
+				return getJsonData(date + matcher.group(2) + "00");
 			}
 			
 			//新闻标题
@@ -204,8 +214,8 @@ public class QQNewsParser extends AbstractNewsParser
 			}
 			content = contentBuilder.toString();
 			content.replaceAll(",", "，");
-			for(int i=0 ; i<patternNum ; ++i){
-				content = content.replaceAll(filter[i], "");
+			for(String filterPattern : filter){
+				content = content.replaceAll(filterPattern, "");
 			}
 			if(content==null || content.isEmpty()) {
 				return false;
@@ -214,14 +224,79 @@ public class QQNewsParser extends AbstractNewsParser
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return true;
 	}
 	
-
-	public String getNewsCategory(){
-		return category;
+	
+	//形如“http://new.qq.com/cmsn/20171120033115”的url要发请求获取json数据
+	private boolean getJsonData(String id) {
+		URI uri;
+		URIBuilder uriBuilder;
+		try(CloseableHttpClient httpCilent = HttpClients.createDefault()) {
+			HttpGet httpget = new HttpGet();
+			
+			uriBuilder = new URIBuilder()  
+			        .setScheme("http")  
+			        .setHost("openapi.inews.qq.com")  
+			        .setPath("/getQQNewsNormalContent")  
+			        .setParameter("id", id)
+			        .setParameter("chlid", "news_rss")
+			        .setParameter("refer", "mobilewwwqqcom")
+			        .setParameter("otype", "jsonp")
+			        .setParameter("ext_data", "all")
+			        .setParameter("srcfrom", "newsapp")
+			        .setParameter("callback", "getNewsContentOnlyOutput")
+			        ;
+			uri = uriBuilder.build();
+			httpget.setURI(uri);
+			CloseableHttpResponse response = httpCilent.execute(httpget);
+			HttpEntity entity = response.getEntity();
+			InputStream in = entity.getContent();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in,"GBK"));
+			
+			String jsonString = br.readLine();
+			jsonString = jsonString.substring(25, jsonString.length()-1);
+			JSONObject newsObject = JSONObject.fromObject(jsonString);
+			
+			//新闻标题
+			if(newsObject.containsKey("title")) {
+				title = newsObject.getString("title");
+			}
+			if(title==null || title.isEmpty()) {
+				return false;
+			}
+			
+			//新闻发布时间
+			time = newsObject.getString("pubtime");
+			time = time.replaceAll("[^0-9]", "");
+			time = time.substring(0, 12);
+			if(time==null || time.isEmpty()) {
+				return false;
+			}
+			
+			//新闻正文内容
+			StringBuilder contentBuilder = new StringBuilder();
+			JSONArray contentArray =  newsObject.getJSONArray("content");
+			for(int i=0 ; i<contentArray.size() ; ++i) {
+				JSONObject contentObject = contentArray.getJSONObject(i);
+				if( contentObject.getInt("type") == 1 ) {
+					contentBuilder.append( contentObject.getString("value") );
+				}
+			}
+			content = contentBuilder.toString();
+			content.replaceAll(",", "，");
+			for(String filterPattern : filter){
+				content = content.replaceAll(filterPattern, "");
+			}
+			if(content==null || content.isEmpty()) {
+				return false;
+			}
+		} catch (URISyntaxException | IOException e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
+	
 	
 	public String getNewsTag(){
 		return tag;

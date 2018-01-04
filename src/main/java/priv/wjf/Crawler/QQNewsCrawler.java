@@ -24,12 +24,14 @@ import ucar.ma2.StructureDataComposite;
 
 public class QQNewsCrawler implements NewsCrawler
 {
-	
-	private final String site = "news";
+	private String site = "";
+	private String cata = "";
 	
 	@Override
-	public void crawl(BlockingQueue<String> urlQueue)
+	public void crawl(BlockingQueue<String> urlQueue, String category)
 	{
+		setSiteCata(category);
+		
 		URI uri;
 		URIBuilder uriBuilder;
 		
@@ -49,7 +51,7 @@ public class QQNewsCrawler implements NewsCrawler
 			        .setParameter("callback", "rollback")
 			        .setParameter("site", site)  
 			        .setParameter("mode", "1")  
-			        .setParameter("cata", "")  
+			        .setParameter("cata", cata)  
 			        ;
 			
 			Calendar calendar = (Calendar)startDate.clone();
@@ -100,7 +102,7 @@ public class QQNewsCrawler implements NewsCrawler
 					for(int i=0 ; i<newsArray.size() ; ++i) {
 						JSONObject newsObject = newsArray.getJSONObject(i);
 						if(!newsObject.getString("column").equals("图片")) {
-							urlQueue.put(newsObject.getString("url"));
+							urlQueue.put( newsObject.getString("url") );
 						}
 					}
 					Thread.sleep(1000);
@@ -120,5 +122,23 @@ public class QQNewsCrawler implements NewsCrawler
 		}
 		
 	}
+	
+	private void setSiteCata(String category) {
+		if(category.equals("gn")
+				|| category.equals("gj")
+				|| category.equals("sh")
+				) {
+			site = "news";
+			cata = site + category;
+		}else if(category.equals("js")) {
+			site = "news";
+			cata = "milite";
+		}else if(category.equals("cj")) {
+			site = "finance";
+		}else if(category.equals("kj")) {
+			site = "tech";
+		}
+	}
+	
 }
 

@@ -22,7 +22,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 public class SinaNewsCrawler implements NewsCrawler
 {
 	@Override
-	public void crawl(BlockingQueue<String> urlQueue) 
+	public void crawl(BlockingQueue<String> urlQueue, String category) 
 	{
 		URI uri;
 		URIBuilder uriBuilder;
@@ -78,6 +78,26 @@ public class SinaNewsCrawler implements NewsCrawler
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private String getCol(String category) {
+		switch (category) {
+		case "gn":
+			return "90";
+		case "gj":
+			return "91";
+		case "sh":
+			return "92";
+		case "js":
+			return "93";
+		case "kj":
+			return "96";
+		case "cj":
+			return "97";
+		default:
+			break;
+		}
+		return "";
 	}
 
 }
