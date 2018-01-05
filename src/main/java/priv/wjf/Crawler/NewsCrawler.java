@@ -5,5 +5,5 @@ import java.util.concurrent.BlockingQueue;
 
 public interface NewsCrawler 
 {
-	void crawl(BlockingQueue<String> urlQueue, String category);
+	void crawl(BlockingQueue<News> newsQueue, String category);
 }

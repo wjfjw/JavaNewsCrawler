@@ -12,7 +12,7 @@ public class BJNewsCrawler implements NewsCrawler
 {
 
 	@Override
-	public void crawl(BlockingQueue<String> urlQueue, String category)
+	public void crawl(BlockingQueue<News> newsQueue, String category)
 	{
 		final String domain = "http://www.bjnews.com.cn";
 		String prefix = domain + "/roll?page=";
@@ -35,7 +35,7 @@ public class BJNewsCrawler implements NewsCrawler
 									|| path.startsWith("/finance")
 									|| path.startsWith("/wevideo")
 									|| path.startsWith("/video")){
-								urlQueue.put(domain + path);
+								newsQueue.put( new News(domain + path, category) );
 							}
 						}
 					}

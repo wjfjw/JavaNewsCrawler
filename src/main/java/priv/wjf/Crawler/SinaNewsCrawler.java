@@ -22,7 +22,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 public class SinaNewsCrawler implements NewsCrawler
 {
 	@Override
-	public void crawl(BlockingQueue<String> urlQueue, String category) 
+	public void crawl(BlockingQueue<News> newsQueue, String category) 
 	{
 		URI uri;
 		URIBuilder uriBuilder;
@@ -50,7 +50,7 @@ public class SinaNewsCrawler implements NewsCrawler
 //			        .setParameter("r", Double.toString(Math.random()))
 			        ;
 			
-			for(int day=5 ; day<=6 ; ++day) {
+			for(int day=30 ; day<=30 ; ++day) {
 				String dateString = Integer.toString(day/10) + Integer.toString(day%10);
 				uriBuilder.setParameter("date", "2017-11-" + dateString);
 				uri = uriBuilder.build();
@@ -65,11 +65,16 @@ public class SinaNewsCrawler implements NewsCrawler
     				String line = br.readLine();
     				if(line == null)
     					break;
-    				Pattern pattern = Pattern.compile("http://.+\\.sina\\.com\\.cn/.+2017-\\d{2}-\\d{2}/.+\\.(htm|html|shtml)");
-    				Matcher matcher = pattern.matcher(line);
-    				if(matcher.find()){
-    					String url = matcher.group();
-    					urlQueue.put(url);
+    				Pattern urlPattern = Pattern.compile("http://.+\\.sina\\.com\\.cn/.+2017-\\d{2}-\\d{2}/.+\\.(htm|html|shtml)");
+    				Pattern colPattern = Pattern.compile("id : \"(\\d{2})\"");
+    				Matcher urlMatcher = urlPattern.matcher(line);
+    				Matcher colMatcher = colPattern.matcher(line);
+    				if(urlMatcher.find() && colMatcher.find()){
+    					String url = urlMatcher.group();
+    					String col = colMatcher.group(1);
+    					if(!url.contains("video")) {
+    						newsQueue.put( new News(url, getCategory(col)) );
+    					}
     				}
     			}
 			}
@@ -80,24 +85,46 @@ public class SinaNewsCrawler implements NewsCrawler
 		}
 	}
 	
-	private String getCol(String category) {
-		switch (category) {
-		case "gn":
-			return "90";
-		case "gj":
-			return "91";
-		case "sh":
-			return "92";
-		case "js":
-			return "93";
-		case "kj":
-			return "96";
-		case "cj":
-			return "97";
+	private String getCategory(String col) {
+		switch (col) {
+		case "90":
+			return "gn";
+		case "91":
+			return "gj";
+		case "92":
+			return "sh";
+		case "93":
+			return "js";
+//		case "94":
+//			return "ty";
+		case "96":
+			return "kj";
+		case "97":
+			return "cj";
 		default:
 			break;
 		}
 		return "";
 	}
+	
+//	private String getCol(String category) {
+//		switch (category) {
+//		case "gn":
+//			return "90";
+//		case "gj":
+//			return "91";
+//		case "sh":
+//			return "92";
+//		case "js":
+//			return "93";
+//		case "kj":
+//			return "96";
+//		case "cj":
+//			return "97";
+//		default:
+//			break;
+//		}
+//		return "";
+//	}
 
 }

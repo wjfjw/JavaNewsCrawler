@@ -15,20 +15,21 @@ import java.util.concurrent.TimeUnit;
  * "js"：军事
  * "cj"：财经
  * "kj"：科技
+ * "ty"：体育
  */
 
 public class App 
 {
-	private static BlockingQueue<String> urlQueue;
+	private static BlockingQueue<News> newsQueue;
 	private static NewsCrawler newsCrawler;
 	private static NewsParser newsParser;
-	private static String outputFile = "./data/qqnews/kjqq";
-	private static String category = "kj";
+	private static String outputFile = "./data/sinanews/sina";
+	private static String category = "";
 	
 	static {
-		urlQueue = new LinkedBlockingQueue<String>();
-		newsCrawler = new QQNewsCrawler();
-		newsParser = new QQNewsParser();
+		newsQueue = new LinkedBlockingQueue<News>();
+		newsCrawler = new SinaNewsCrawler();
+		newsParser = new SinaNewsParser();
 	}
 	
     public static void main( String[] args ) throws FileNotFoundException, InterruptedException
@@ -57,7 +58,7 @@ public class App
     {
     	@Override
     	public void run() {
-    		newsCrawler.crawl(urlQueue, category);
+    		newsCrawler.crawl(newsQueue, category);
     	}
     }
     
@@ -67,20 +68,22 @@ public class App
     	@Override
     	public void run() {
     		try(FileWriter out = new FileWriter(outputFile , true)) {
+    			News news = null;
     			String url = null;
 //    			int linenum = 1;
     			while(true) {
 //    				synchronized (ParserRunnable.class) {
 //    				Thread.sleep(200);
-    				url = urlQueue.poll(2, TimeUnit.SECONDS);
-    				if(url==null) {
+    				news = newsQueue.poll(5, TimeUnit.SECONDS);
+    				if(news==null) {
     					break;
     				}
+    				url = news.getUrl();
     				newsParser.clear();
     				if(newsParser.parse(url)) {
     					out.write(newsParser.getNewsTime());
     					out.write("," + newsParser.getNewsTitle());
-    					out.write("," + category);
+    					out.write("," + news.getCategory());
     					out.write("," + url);
     					out.write("," + newsParser.getNewsSource());
     					out.write("," + newsParser.getNewsContent());

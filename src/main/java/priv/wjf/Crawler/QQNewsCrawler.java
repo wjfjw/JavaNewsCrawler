@@ -28,7 +28,7 @@ public class QQNewsCrawler implements NewsCrawler
 	private String cata = "";
 	
 	@Override
-	public void crawl(BlockingQueue<String> urlQueue, String category)
+	public void crawl(BlockingQueue<News> newsQueue, String category)
 	{
 		setSiteCata(category);
 		
@@ -102,7 +102,8 @@ public class QQNewsCrawler implements NewsCrawler
 					for(int i=0 ; i<newsArray.size() ; ++i) {
 						JSONObject newsObject = newsArray.getJSONObject(i);
 						if(!newsObject.getString("column").equals("图片")) {
-							urlQueue.put( newsObject.getString("url") );
+							newsQueue.put( new News(
+									newsObject.getString("url"), category) );
 						}
 					}
 					Thread.sleep(1000);

@@ -1,8 +1,8 @@
 package priv.wjf.Crawler;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,19 +11,19 @@ import org.jsoup.select.Elements;
 
 public class SinaNewsParser extends AbstractNewsParser
 {
-	private final int patternNum = 5;
-	private String[] filter;
+//	private List<String> filter;
 	
 	public SinaNewsParser(){
 		super("新浪新闻");
 		
-		filter = new String[patternNum];
-		filter[0] = ".{0,15}(\\d{1,2}月\\d{1,2}日)?([电讯]|消息|报道)";
-		filter[1] = "[(（【].{0,20}记者.{0,20}[)）】]";
-		filter[2] = "\\[.{0,30}\\]";
-		filter[3] = "[（(].{0,10}[)）]";
-		filter[4] = "[\\s 　]+";
-//		filter[4] = "据.{0,20}报道";
+//		filter = new ArrayList<String>();
+//		filter.add(".{0,15}\\d{1,2}月\\d{1,2}日([电讯]|消息|报道)");
+//		filter.add(".{0,15}(消息|报道|称|透露)");
+//		filter.add("[(（【].{0,20}记者.{0,20}[)）】]");
+//		filter.add("[（(].{0,15}[)）]");
+//		filter.add("[\\s 　]+");
+//		filter.add("资料图(片)?(：)?");
+//		filter.add("\\[.{0,30}\\]");
 	}
 
 	@Override
@@ -70,6 +70,28 @@ public class SinaNewsParser extends AbstractNewsParser
 			}
 			time = time.replaceAll("[^0-9]", "");
 			
+//			//新闻类别
+//			String categoryString = "";
+//			Element categoryNode = doc.getElementsByClass("bread").first();
+//			if(categoryNode != null) {
+//				categoryString = categoryNode.getElementsByTag("a").first().ownText();
+//				if(categoryString.contains("国内")) {
+//					category = "gn";
+//				}else if(categoryString.contains("国际")) {
+//					category = "gj";
+//				}
+//			}else {
+//				categoryNode = doc.getElementsByClass("text notInPad").first();
+//				if(categoryNode != null) {
+//					categoryString = categoryNode.getElementsByTag("a").first().ownText();
+//					if(categoryString.contains("军")) {
+//						category = "js";
+//					}
+//				}else {
+//					
+//				}
+//			}
+			
 			
 			//新闻正文
 			StringBuilder contentBuilder = new StringBuilder();
@@ -90,9 +112,9 @@ public class SinaNewsParser extends AbstractNewsParser
 				}
 			}
 			content = contentBuilder.toString();
-			for(int i=0 ; i<patternNum ; ++i){
-				content = content.replaceAll(filter[i], "");
-			}
+//			for(String filterPattern : filter){
+//				content = content.replaceAll(filterPattern, "");
+//			}
 			content.replaceAll(",", "，");
 			if(content==null || content.isEmpty()) {
 				System.out.println(url);
