@@ -35,12 +35,12 @@ public class QQNewsParser extends AbstractNewsParser
 		tag = null;
 		
 		filter = new ArrayList<String>();
-		filter.add(".{0,15}\\d{1,2}月\\d{1,2}日([电讯]|消息|报道)");
-		filter.add(".{0,15}(消息|报道|称|透露)");
-		filter.add("[(（【].{0,20}记者.{0,20}[)）】]");
-		filter.add("[（(].{0,10}[)）]");
+//		filter.add(".{0,15}\\d{1,2}月\\d{1,2}日([电讯]|消息|报道)");
+//		filter.add(".{0,15}(消息|报道|称|透露)");
+//		filter.add("[(（【].{0,20}记者.{0,20}[)）】]");
+//		filter.add("[（(].{0,10}[)）]");
 		filter.add("[\\s 　]+");
-		filter.add("资料图(片)?(：)?");
+//		filter.add("资料图(片)?(：)?");
 	}
 	
 	public boolean parse(String url){

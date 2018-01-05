@@ -24,7 +24,7 @@
 hs_err_pid*
 
 #target files
-/target/
+target/
 
 # data files
-/data/
+data/

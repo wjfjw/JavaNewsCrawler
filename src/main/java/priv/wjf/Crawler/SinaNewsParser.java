@@ -11,17 +11,17 @@ import org.jsoup.select.Elements;
 
 public class SinaNewsParser extends AbstractNewsParser
 {
-//	private List<String> filter;
+	private List<String> filter;
 	
 	public SinaNewsParser(){
 		super("新浪新闻");
 		
-//		filter = new ArrayList<String>();
+		filter = new ArrayList<String>();
 //		filter.add(".{0,15}\\d{1,2}月\\d{1,2}日([电讯]|消息|报道)");
 //		filter.add(".{0,15}(消息|报道|称|透露)");
 //		filter.add("[(（【].{0,20}记者.{0,20}[)）】]");
 //		filter.add("[（(].{0,15}[)）]");
-//		filter.add("[\\s 　]+");
+		filter.add("[\\s 　]+");
 //		filter.add("资料图(片)?(：)?");
 //		filter.add("\\[.{0,30}\\]");
 	}
@@ -112,9 +112,9 @@ public class SinaNewsParser extends AbstractNewsParser
 				}
 			}
 			content = contentBuilder.toString();
-//			for(String filterPattern : filter){
-//				content = content.replaceAll(filterPattern, "");
-//			}
+			for(String filterPattern : filter){
+				content = content.replaceAll(filterPattern, "");
+			}
 			content.replaceAll(",", "，");
 			if(content==null || content.isEmpty()) {
 				System.out.println(url);

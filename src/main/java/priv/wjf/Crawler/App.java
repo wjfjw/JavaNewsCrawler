@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
  * "js"：军事
  * "cj"：财经
  * "kj"：科技
- * "ty"：体育
  */
 
 public class App 
@@ -23,13 +22,13 @@ public class App
 	private static BlockingQueue<News> newsQueue;
 	private static NewsCrawler newsCrawler;
 	private static NewsParser newsParser;
-	private static String outputFile = "./data/sinanews/sina";
-	private static String category = "";
+	private static String outputFile = "./data/qqnews/qq";
+	private static String category = "gn";
 	
 	static {
 		newsQueue = new LinkedBlockingQueue<News>();
-		newsCrawler = new SinaNewsCrawler();
-		newsParser = new SinaNewsParser();
+		newsCrawler = new QQNewsCrawler();
+		newsParser = new QQNewsParser();
 	}
 	
     public static void main( String[] args ) throws FileNotFoundException, InterruptedException
