@@ -22,8 +22,8 @@ public class App
 	private static BlockingQueue<News> newsQueue;
 	private static NewsCrawler newsCrawler;
 	private static NewsParser newsParser;
-	private static String outputFile = "./data/qqnews/qq";
-	private static String category = "gn";
+	private static String outputFile = "./data/qqnews/qq201711";
+	private static String category = "kj";
 	
 	static {
 		newsQueue = new LinkedBlockingQueue<News>();
